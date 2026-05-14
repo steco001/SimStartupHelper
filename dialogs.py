@@ -15,7 +15,7 @@ class ProgramDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         self.title(title)
-        self.geometry("420x300")
+        self.geometry("420x360")
         self.resizable(False, False)
         self.grab_set()
         self._on_save = on_save
@@ -35,7 +35,7 @@ class ProgramDialog(ctk.CTkToplevel):
         self._path = ctk.CTkEntry(path_row, width=325)
         self._path.insert(0, program.get("path", ""))
         self._path.pack(side="left")
-        ctk.CTkButton(path_row, text="...", width=50, command=self._browse).pack(
+        ctk.CTkButton(path_row, text="...", width=50, fg_color="#f5a623", hover_color="#c8861a", text_color="#1a1a1a", command=self._browse).pack(
             side="left", padx=(6, 0)
         )
 
@@ -56,7 +56,7 @@ class ProgramDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_row, text="Abbrechen", fg_color="gray", command=self.destroy).pack(
             side="right", padx=(6, 0)
         )
-        ctk.CTkButton(btn_row, text="Speichern", command=self._save).pack(side="right")
+        ctk.CTkButton(btn_row, text="Speichern", fg_color="#f5a623", hover_color="#c8861a", text_color="#1a1a1a", command=self._save).pack(side="right")
         self._delay.bind("<Return>", lambda e: self._save())
         self._name.focus()
 
@@ -121,7 +121,7 @@ class ProfileNameDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_row, text="Abbrechen", fg_color="gray", command=self.destroy).pack(
             side="right", padx=(6, 0)
         )
-        ctk.CTkButton(btn_row, text="OK", command=self._save).pack(side="right")
+        ctk.CTkButton(btn_row, text="OK", fg_color="#f5a623", hover_color="#c8861a", text_color="#1a1a1a", command=self._save).pack(side="right")
 
     def _save(self):
         name = self._name.get().strip()

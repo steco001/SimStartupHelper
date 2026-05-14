@@ -63,15 +63,25 @@ class ProcessManager:
     def get_key(self, index: int, name: str) -> str:
         return f"{index}_{name}"
 
+    def is_running(self, key: str) -> bool:
+        with self._lock:
+            proc = self._processes.get(key)
+        return proc is not None and proc.poll() is None
+
     def _launch(self, key: str, program: dict):
         try:
             args = shlex.split(program.get("args", "")) if program.get("args") else []
-            proc = subprocess.Popen([program["path"]] + args)
+            proc = subprocess.Popen(
+                [program["path"]] + args,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
             with self._lock:
                 self._processes[key] = proc
             if self._status_callback:
                 self._status_callback(key, True)
-        except (OSError, ValueError):
+        except Exception:
             if self._status_callback:
                 self._status_callback(key, False)
 

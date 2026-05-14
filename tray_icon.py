@@ -5,10 +5,12 @@ import pystray
 from PIL import Image, ImageDraw
 
 
-def _make_icon_image() -> Image.Image:
-    img = Image.new("RGB", (32, 32), color=(21, 101, 192))
+def _make_icon_image(size: int = 32) -> Image.Image:
+    img = Image.new("RGBA", (size, size), color=(0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    draw.rectangle([10, 10, 22, 22], fill=(255, 255, 255))
+    draw.rounded_rectangle([0, 0, size - 1, size - 1], radius=size // 5, fill=(245, 166, 35))
+    m = size // 5
+    draw.text((m + 1, m - 1), "S", fill=(26, 26, 26))
     return img
 
 

@@ -74,6 +74,15 @@ class ProfileManager:
         self.save()
         return new_profile
 
+    def rename_profile(self, profile_id: str, new_name: str):
+        if self._name_exists(new_name):
+            raise ValueError(f"Profile '{new_name}' already exists")
+        profile = self.get_profile(profile_id)
+        if profile is None:
+            raise ValueError(f"Profile {profile_id} not found")
+        profile["name"] = new_name
+        self.save()
+
     def delete_profile(self, profile_id: str):
         self.data["profiles"] = [
             p for p in self.data["profiles"] if p["id"] != profile_id
