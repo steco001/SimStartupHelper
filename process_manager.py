@@ -6,45 +6,56 @@ from typing import Callable
 
 
 class ProcessManager:
-    def __init__(self, status_callback: Callable[[str | None, bool], None] = None):
+    def __init__(self, status_callback: Callable = None):
         self._processes: dict[str, subprocess.Popen] = {}
         self._timers: list[threading.Timer] = []
         self._monitor_thread: threading.Thread | None = None
         self._monitor_active = False
         self._status_callback = status_callback
+        self._lock = threading.Lock()
 
     def start_profile(self, programs: list[dict]):
-        self._cancel_timers()
-        for i, program in enumerate(programs):
-            key = f"{i}_{program['name']}"
-            t = threading.Timer(program.get("delay", 0), self._launch, args=[key, program])
-            self._timers.append(t)
-            t.start()
+        with self._lock:
+            self._cancel_timers_locked()
+            for i, program in enumerate(programs):
+                key = f"{i}_{program['name']}"
+                t = threading.Timer(program.get("delay", 0), self._launch, args=[key, program])
+                self._timers.append(t)
+                t.start()
         if not self._monitor_active:
             self._start_monitor()
 
     def start_stopped(self, programs: list[dict]):
         for i, program in enumerate(programs):
             key = f"{i}_{program['name']}"
-            proc = self._processes.get(key)
-            if proc is None or proc.poll() is not None:
-                t = threading.Timer(0, self._launch, args=[key, program])
-                self._timers.append(t)
-                t.start()
+            with self._lock:
+                proc = self._processes.get(key)
+                should_restart = proc is None or proc.poll() is not None
+            if should_restart:
+                threading.Thread(target=self._launch, args=[key, program], daemon=True).start()
 
     def stop_all(self):
-        self._cancel_timers()
-        self._monitor_active = False
-        for proc in list(self._processes.values()):
+        with self._lock:
+            self._cancel_timers_locked()
+            self._monitor_active = False
+            procs = list(self._processes.values())
+            self._processes.clear()
+
+        for proc in procs:
             proc.terminate()
         deadline = time.time() + 3.0
-        for proc in list(self._processes.values()):
+        for proc in procs:
             remaining = max(0.0, deadline - time.time())
             try:
                 proc.wait(timeout=remaining)
             except subprocess.TimeoutExpired:
                 proc.kill()
-        self._processes.clear()
+
+        thread = self._monitor_thread
+        self._monitor_thread = None
+        if thread is not None and thread.is_alive():
+            thread.join(timeout=1.0)
+
         if self._status_callback:
             self._status_callback(None, False)
 
@@ -55,14 +66,15 @@ class ProcessManager:
         try:
             args = shlex.split(program.get("args", "")) if program.get("args") else []
             proc = subprocess.Popen([program["path"]] + args)
-            self._processes[key] = proc
+            with self._lock:
+                self._processes[key] = proc
             if self._status_callback:
                 self._status_callback(key, True)
         except (OSError, ValueError):
             if self._status_callback:
                 self._status_callback(key, False)
 
-    def _cancel_timers(self):
+    def _cancel_timers_locked(self):
         for t in self._timers:
             t.cancel()
         self._timers.clear()
@@ -74,7 +86,9 @@ class ProcessManager:
 
     def _monitor_loop(self):
         while self._monitor_active:
-            for key, proc in list(self._processes.items()):
+            with self._lock:
+                items = list(self._processes.items())
+            for key, proc in items:
                 if self._status_callback:
                     self._status_callback(key, proc.poll() is None)
             time.sleep(2)
