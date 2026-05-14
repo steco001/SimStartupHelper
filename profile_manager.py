@@ -45,7 +45,7 @@ class ProfileManager:
     # --- Profile CRUD ---
 
     def get_profiles(self) -> list:
-        return self.data["profiles"]
+        return list(self.data["profiles"])
 
     def get_profile(self, profile_id: str) -> dict | None:
         return next((p for p in self.data["profiles"] if p["id"] == profile_id), None)
@@ -97,6 +97,8 @@ class ProfileManager:
         profile = self.get_profile(profile_id)
         if profile is None:
             raise ValueError(f"Profile {profile_id} not found")
+        if index < 0 or index >= len(profile["programs"]):
+            raise IndexError(f"Program index {index} out of range for profile {profile_id}")
         profile["programs"][index] = {"name": name, "path": path, "args": args, "delay": delay}
         self.save()
 
@@ -104,5 +106,7 @@ class ProfileManager:
         profile = self.get_profile(profile_id)
         if profile is None:
             raise ValueError(f"Profile {profile_id} not found")
+        if index < 0 or index >= len(profile["programs"]):
+            raise IndexError(f"Program index {index} out of range for profile {profile_id}")
         del profile["programs"][index]
         self.save()
