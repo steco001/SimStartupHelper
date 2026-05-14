@@ -149,7 +149,10 @@ class App(ctk.CTk):
         ProfileNameDialog(self, "Neues Profil", on_save=self._save_new_profile)
 
     def _save_new_profile(self, name: str):
-        self._pm.add_profile(name)
+        try:
+            self._pm.add_profile(name)
+        except ValueError:
+            return
         profiles = self._pm.get_profiles()
         names = [p["name"] for p in profiles]
         self._profile_dropdown.configure(values=names)
@@ -168,7 +171,10 @@ class App(ctk.CTk):
         )
 
     def _save_cloned_profile(self, source_id: str, new_name: str):
-        self._pm.clone_profile(source_id, new_name)
+        try:
+            self._pm.clone_profile(source_id, new_name)
+        except ValueError:
+            return
         profiles = self._pm.get_profiles()
         names = [p["name"] for p in profiles]
         self._profile_dropdown.configure(values=names)
@@ -337,6 +343,9 @@ class App(ctk.CTk):
         self.withdraw()
 
     def show(self):
+        self.after(0, self._do_show)
+
+    def _do_show(self):
         self.deiconify()
         self.lift()
         self.focus_force()

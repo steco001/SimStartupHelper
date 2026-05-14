@@ -50,7 +50,12 @@ class ProfileManager:
     def get_profile(self, profile_id: str) -> dict | None:
         return next((p for p in self.data["profiles"] if p["id"] == profile_id), None)
 
+    def _name_exists(self, name: str) -> bool:
+        return any(p["name"] == name for p in self.data["profiles"])
+
     def add_profile(self, name: str) -> dict:
+        if self._name_exists(name):
+            raise ValueError(f"Profile '{name}' already exists")
         profile = {"id": str(uuid.uuid4()), "name": name, "programs": []}
         self.data["profiles"].append(profile)
         self.save()
@@ -60,6 +65,8 @@ class ProfileManager:
         source = self.get_profile(profile_id)
         if source is None:
             raise ValueError(f"Profile {profile_id} not found")
+        if self._name_exists(new_name):
+            raise ValueError(f"Profile '{new_name}' already exists")
         new_profile = copy.deepcopy(source)
         new_profile["id"] = str(uuid.uuid4())
         new_profile["name"] = new_name

@@ -22,7 +22,8 @@ class ProcessManager:
                 t = threading.Timer(program.get("delay", 0), self._launch, args=[key, program])
                 self._timers.append(t)
                 t.start()
-        if not self._monitor_active:
+            should_start_monitor = not self._monitor_active
+        if should_start_monitor:
             self._start_monitor()
 
     def start_stopped(self, programs: list[dict]):
