@@ -4,4 +4,7 @@ __pycache__/
 *.egg-info/
 dist/
 .superpowers/
-%APPDATA%/SimStartUpHelper/
+.pytest_cache/
+.mypy_cache/
+
+# profiles.json is stored in %APPDATA%\SimStartUpHelper\ (outside the repo) — no git entry needed
