@@ -68,6 +68,10 @@ class ProgramDialog(ctk.CTkToplevel):
         if path:
             self._path.delete(0, "end")
             self._path.insert(0, path)
+            if not self._name.get().strip():
+                from pathlib import Path
+                self._name.delete(0, "end")
+                self._name.insert(0, Path(path).stem)
 
     def _save(self):
         name = self._name.get().strip()
