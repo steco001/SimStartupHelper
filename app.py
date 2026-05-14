@@ -124,6 +124,7 @@ class App(ctk.CTk):
         if not profiles:
             self._profile_dropdown.configure(values=["(keine Profile)"])
             self._profile_var.set("(keine Profile)")
+            self._refresh_programs()
             return
         names = [p["name"] for p in profiles]
         self._profile_dropdown.configure(values=names)
@@ -149,7 +150,9 @@ class App(ctk.CTk):
 
     def _save_new_profile(self, name: str):
         self._pm.add_profile(name)
-        self._refresh_profiles()
+        profiles = self._pm.get_profiles()
+        names = [p["name"] for p in profiles]
+        self._profile_dropdown.configure(values=names)
         self._profile_var.set(name)
         self._refresh_programs()
 
@@ -166,7 +169,9 @@ class App(ctk.CTk):
 
     def _save_cloned_profile(self, source_id: str, new_name: str):
         self._pm.clone_profile(source_id, new_name)
-        self._refresh_profiles()
+        profiles = self._pm.get_profiles()
+        names = [p["name"] for p in profiles]
+        self._profile_dropdown.configure(values=names)
         self._profile_var.set(new_name)
         self._refresh_programs()
 
@@ -211,7 +216,7 @@ class App(ctk.CTk):
         actions = ctk.CTkFrame(row, fg_color="transparent")
         actions.pack(side="right", padx=6, pady=4)
 
-        key = f"{index}_{prog['name']}"
+        key = self._proc.get_key(index, prog['name'])
         status_lbl = ctk.CTkLabel(actions, text="○", font=("", 14), text_color="gray", width=20)
         status_lbl.pack(side="left", padx=(0, 4))
         ctk.CTkButton(
