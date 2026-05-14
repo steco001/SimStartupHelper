@@ -126,11 +126,6 @@ class App(ctk.CTk):
         btn_del_profile.pack(side="left", padx=2)
         Tooltip(btn_del_profile, "Profil löschen")
 
-        self._active_label = ctk.CTkLabel(
-            header, text="", font=("", 10), text_color="gray", anchor="w"
-        )
-        self._active_label.pack(anchor="w", padx=12)
-
         ctk.CTkFrame(self, height=1, fg_color=_SEPARATOR).pack(fill="x")
 
         # Programs section
@@ -419,22 +414,14 @@ class App(ctk.CTk):
         profile = self._get_selected_profile()
         if not profile:
             self._status_bar.configure(text="Kein aktives Profil")
-            self._active_label.configure(text="")
             return
         total = len(profile["programs"])
         running = sum(1 for r in self._program_rows if r["status_lbl"].cget("text") == "●")
         if total == 0:
-            self._active_label.configure(text="Keine Programme konfiguriert", text_color="gray")
             self._start_btn.configure(state="normal")
         elif running == total:
-            self._active_label.configure(
-                text=f"● Aktiv — {running} von {total} laufen", text_color="#4caf50"
-            )
             self._start_btn.configure(state="disabled")
         else:
-            self._active_label.configure(
-                text=f"○ {running} von {total} laufen", text_color="orange"
-            )
             self._start_btn.configure(state="normal")
         self._status_bar.configure(text=f"{profile['name']} · {running}/{total} laufen")
 
