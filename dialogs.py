@@ -57,9 +57,12 @@ class ProgramDialog(ctk.CTkToplevel):
             side="right", padx=(6, 0)
         )
         ctk.CTkButton(btn_row, text="Speichern", command=self._save).pack(side="right")
+        self._delay.bind("<Return>", lambda e: self._save())
+        self._name.focus()
 
     def _browse(self):
         path = filedialog.askopenfilename(
+            parent=self,
             filetypes=[("Programme", "*.exe"), ("Alle Dateien", "*.*")]
         )
         if path:
@@ -69,7 +72,11 @@ class ProgramDialog(ctk.CTkToplevel):
     def _save(self):
         name = self._name.get().strip()
         path = self._path.get().strip()
-        if not name or not path:
+        if not name:
+            self._name.configure(border_color="red")
+            return
+        if not path:
+            self._path.configure(border_color="red")
             return
         try:
             delay = max(0, int(self._delay.get().strip()))
@@ -107,6 +114,7 @@ class ProfileNameDialog(ctk.CTkToplevel):
         self._name.insert(0, initial_name)
         self._name.pack(**pad)
         self._name.focus()
+        self._name.bind("<Return>", lambda e: self._save())
 
         btn_row = ctk.CTkFrame(self, fg_color="transparent")
         btn_row.pack(fill="x", padx=16, pady=(8, 8))
