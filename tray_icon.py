@@ -31,10 +31,11 @@ class TrayIcon:
     def stop(self):
         if self._icon:
             self._icon.stop()
+            self._icon = None
 
     def _handle_show(self, icon, item):
         self._on_show()
 
     def _handle_quit(self, icon, item):
-        self._icon.stop()
+        self.stop()
         self._on_quit()
